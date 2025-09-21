@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Minuteur de notre date</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #ffe6f0, #fff0f5);
+    font-family: 'Poppins', sans-serif;
+    color: #ff3366;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 2.5em;
+    margin-bottom: 30px;
+  }
+
+  #timer {
+    display: flex;
+    gap: 15px;
+    font-size: 2.5em;
+    font-weight: bold;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  .time-block {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 15px 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+  }
+
+  .time-block:hover {
+    transform: scale(1.05);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 400px) {
+    #timer {
+      font-size: 2em;
+      gap: 10px;
+    }
+    .time-block {
+      padding: 10px 15px;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>Compte à rebours pour notre date ❤️</h1>
+<div id="timer">
+  <div class="time-block" id="days">0j</div>
+  <div class="time-block" id="hours">0h</div>
+  <div class="time-block" id="minutes">0m</div>
+  <div class="time-block" id="seconds">0s</div>
+</div>
+
+<script>
+const eventDate = new Date("2025-09-21T21:00:00");
+
+function updateTimer() {
+  const now = new Date();
+  const diff = eventDate - now;
+
+  if (diff <= 0) {
+    document.getElementById("timer").innerHTML = "<div class='time-block'>C'est notre moment 😘</div>";
+    clearInterval(timerInterval);
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  document.getElementById("days").innerText = `${days}j`;
+  document.getElementById("hours").innerText = `${hours}h`;
+  document.getElementById("minutes").innerText = `${minutes}m`;
+  document.getElementById("seconds").innerText = `${seconds}s`;
+}
+
+updateTimer();
+const timerInterval = setInterval(updateTimer, 1000);
+</script>
+</body>
+</html>
