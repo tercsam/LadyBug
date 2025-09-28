@@ -70,14 +70,14 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
-    justify-content: center; /* centrage vertical */
+    justify-content: center; /* centrage vertical de tout le contenu */
     align-items: center;     /* centrage horizontal */
     font-family: 'Poppins', sans-serif;
     color: #ff3366;
     font-weight: 700;
     text-align: center;
     padding: 10px;
-    gap: 10px;
+    gap: 10px; /* espace entre messages et input */
     overflow: hidden;
   }
 
@@ -111,31 +111,6 @@
     background: rgba(255,255,255,0.2);
   }
 
-  /* Bouton supprimer chat */
-  #deleteChatBtn {
-    position: absolute;
-    top: 5px;
-    left: -35px;
-    width: 30px;
-    height: 30px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    color: #ff3366;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    user-select: none;
-    transition: transform 0.2s;
-  }
-
-  #deleteChatBtn:hover {
-    transform: scale(1.1);
-  }
-
   /* Animation de pulsation pour les emojis */
   .pulse-emoji {
     display: inline-block;
@@ -157,7 +132,6 @@
     .time-block { padding: 10px 15px; }
     h1 { font-size: 2em; margin-bottom: 20px; }
     #chat { width: 180px; height: 200px; }
-    #deleteChatBtn { left: -30px; width: 25px; height: 25px; font-size: 0.9em; }
   }
 </style>
 </head>
@@ -173,9 +147,6 @@
   <div class="time-block" id="seconds">0s</div>
 </div>
 
-<!-- Bouton supprimer chat -->
-<div id="deleteChatBtn">X</div>
-
 <!-- Chat -->
 <div id="chat">
   <div id="messages"></div>
@@ -184,7 +155,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDVI5b8v8oagpWPOnmVmUlN6tRBLOjzN8Y",
@@ -202,20 +173,19 @@
 
   const messagesDiv = document.getElementById("messages");
   const input = document.getElementById("msgInput");
-  const deleteChatBtn = document.getElementById("deleteChatBtn");
 
-  // Affichage messages en temps réel
+  // Affichage des messages en temps réel
   onSnapshot(chatCollection, (snapshot) => {
     messagesDiv.innerHTML = "";
-    snapshot.forEach((docSnap) => {
+    snapshot.forEach((doc) => {
       const msg = document.createElement("div");
-      msg.textContent = docSnap.data().text;
+      msg.textContent = doc.data().text;
       messagesDiv.appendChild(msg);
     });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 
-  // Envoi message
+  // Envoi d'un message
   input.addEventListener("keypress", async (e) => {
     if (e.key === "Enter" && input.value.trim() !== "") {
       await addDoc(chatCollection, { text: input.value });
@@ -223,16 +193,8 @@
     }
   });
 
-  // Supprimer tous les messages
-  deleteChatBtn.addEventListener("click", async () => {
-    const snapshot = await getDocs(chatCollection);
-    snapshot.forEach(async (docSnap) => {
-      await deleteDoc(doc(db, "messages", docSnap.id));
-    });
-  });
-
   // Compte à rebours
-  const eventDate = new Date("2025-09-29T14:30:00");
+  const eventDate = new Date("2025-09-27T11:00:00");
   function updateTimer() {
     const now = new Date();
     const diff = eventDate - now;
@@ -275,4 +237,9 @@
 
   updateSince();
   updateTimer();
-  con
+  const timerInterval = setInterval(updateTimer, 1000);
+  setInterval(updateSince, 60000);
+</script>
+
+</body>
+</html>
