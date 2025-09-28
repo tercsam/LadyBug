@@ -20,6 +20,7 @@
     font-family: 'Poppins', sans-serif;
     color: #ff3366;
     text-align: center;
+    position: relative;
   }
 
   h1 {
@@ -49,13 +50,64 @@
     transform: scale(1.05);
   }
 
-  /* Compteur de jours */
   #since {
     position: absolute;
     top: 15px;
     left: 15px;
     font-size: 1.2em;
     padding: 8px 15px;
+  }
+
+  /* Chat centré verticalement */
+  #chat {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 220px;
+    height: 250px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* centrage vertical de tout le contenu */
+    align-items: center;     /* centrage horizontal */
+    font-family: 'Poppins', sans-serif;
+    color: #ff3366;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px;
+    gap: 10px; /* espace entre messages et input */
+    overflow: hidden;
+  }
+
+  #messages {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+  }
+
+  #messages div {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 10px;
+    border-radius: 10px;
+    word-break: break-word;
+    text-align: center;
+    width: 90%;
+  }
+
+  #chat input {
+    border: none;
+    padding: 8px;
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    color: #ff3366;
+    text-align: center;
+    background: rgba(255,255,255,0.2);
   }
 
   /* Animation de pulsation pour les emojis */
@@ -75,17 +127,10 @@
   }
 
   @media (max-width: 400px) {
-    #timer {
-      font-size: 2em;
-      gap: 10px;
-    }
-    .time-block {
-      padding: 10px 15px;
-    }
-    h1 {
-      font-size: 2em;
-      margin-bottom: 20px;
-    }
+    #timer { font-size: 2em; gap: 10px; }
+    .time-block { padding: 10px 15px; }
+    h1 { font-size: 2em; margin-bottom: 20px; }
+    #chat { width: 180px; height: 200px; }
   }
 </style>
 </head>
@@ -101,70 +146,95 @@
   <div class="time-block" id="seconds">0s</div>
 </div>
 
-<script>
-// Date et heure de l'événement
-const eventDate = new Date("2025-09-29T14:30:00");
+<!-- Chat -->
+<div id="chat">
+  <div id="messages"></div>
+  <input id="msgInput" placeholder="Écris ici..." />
+</div>
 
-// Date de début de la relation
-const startDate = new Date(2025, 7, 12);
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-// Liste de phrases mignonnes
-const messages = [
-  "C'est notre moment 😘",
-  "Grr can't wait de te voir 🫦", 
-  "Encore un jour ensemble 💕",
-  "Je pense à nous 💖",
-  "Trop hâte de te retrouver 😍",
-  "cant wait de regarder des films avec toi 🫦",
-  "Tu me manques 💌",
-  "Mon cœur est à toi 💓",
-  "Hâte de nos câlins 🤗",
-];
+  const firebaseConfig = {
+    apiKey: "AIzaSyDVI5b8v8oagpWPOnmVmUlN6tRBLOjzN8Y",
+    authDomain: "ladybug-7f168.firebaseapp.com",
+    databaseURL: "https://ladybug-7f168-default-rtdb.firebaseio.com",
+    projectId: "ladybug-7f168",
+    storageBucket: "ladybug-7f168.appspot.com",
+    messagingSenderId: "558949565079",
+    appId: "1:558949565079:web:9483c4aa7ba3d386549fd2",
+    measurementId: "G-SNLE8M0K3B"
+  };
 
-// Fonction pour choisir un message aléatoire
-function getRandomMessage() {
-  const index = Math.floor(Math.random() * messages.length);
-  return messages[index];
-}
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-// Met à jour le compte à rebours
-function updateTimer() {
-  const now = new Date();
-  const diff = eventDate - now;
+  const chatRef = ref(db, "messages");
+  const messagesDiv = document.getElementById("messages");
+  const input = document.getElementById("msgInput");
 
-  if (diff <= 0) {
-    // Affiche un message aléatoire avec emojis qui pulsent
-    const message = getRandomMessage();
-    const messageWithPulse = message.replace(/(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu, '<span class="pulse-emoji">$&</span>');
-    document.getElementById("timer").innerHTML = `<div class='time-block'>${messageWithPulse}</div>`;
-    clearInterval(timerInterval);
-    return;
+  onChildAdded(chatRef, (data) => {
+    const msg = document.createElement("div");
+    msg.textContent = data.val().text;
+    messagesDiv.appendChild(msg);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter" && input.value.trim() !== "") {
+      push(chatRef, { text: input.value });
+      input.value = "";
+    }
+  });
+
+  // Compte à rebours
+  const eventDate = new Date("2025-09-29T14:30:00");
+  function updateTimer() {
+    const now = new Date();
+    const diff = eventDate - now;
+    if (diff <= 0) {
+      const messages = [
+        "C'est notre moment 😘",
+        "Grr can't wait de te voir 🫦",
+        "Encore un jour ensemble 💕",
+        "Je pense à nous 💖",
+        "Trop hâte de te retrouver 😍",
+        "cant wait de regarder des films avec toi 🫦",
+        "Tu me manques 💌",
+        "Mon cœur est à toi 💓",
+        "Hâte de nos câlins 🤗"
+      ];
+      const rand = Math.floor(Math.random()*messages.length);
+      const messageWithPulse = messages[rand].replace(/(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu, '<span class="pulse-emoji">$&</span>');
+      document.getElementById("timer").innerHTML = `<div class='time-block'>${messageWithPulse}</div>`;
+      clearInterval(timerInterval);
+      return;
+    }
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor((diff / (1000*60*60)) % 24);
+    const minutes = Math.floor((diff / (1000*60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    document.getElementById("days").innerText = `${days}j`;
+    document.getElementById("hours").innerText = `${hours}h`;
+    document.getElementById("minutes").innerText = `${minutes}m`;
+    document.getElementById("seconds").innerText = `${seconds}s`;
   }
 
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
+  // Compteur de jours ensemble
+  const startDate = new Date(2025, 7, 12);
+  function updateSince() {
+    const now = new Date();
+    const diff = now - startDate;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    document.getElementById("since").innerText = `${days} jours 💕`;
+  }
 
-  document.getElementById("days").innerText = `${days}j`;
-  document.getElementById("hours").innerText = `${hours}h`;
-  document.getElementById("minutes").innerText = `${minutes}m`;
-  document.getElementById("seconds").innerText = `${seconds}s`;
-}
-
-// Met à jour le compteur de jours depuis le début
-function updateSince() {
-  const now = new Date();
-  const diff = now - startDate;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  document.getElementById("since").innerText = `${days} jours 💕`;
-}
-
-// Lancer au chargement
-updateSince();
-updateTimer();
-setInterval(updateTimer, 1000);
-setInterval(updateSince, 60000);
+  updateSince();
+  updateTimer();
+  const timerInterval = setInterval(updateTimer, 1000);
+  setInterval(updateSince, 60000);
 </script>
+
 </body>
 </html>
