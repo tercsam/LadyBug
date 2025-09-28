@@ -69,11 +69,6 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 700;
-    text-align: center;
     padding: 10px;
     gap: 10px;
     overflow: hidden;
@@ -82,20 +77,16 @@
   #messages {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     gap: 5px;
     width: 100%;
     overflow-y: auto;
   }
 
   #messages div {
-    background: rgba(255,255,255,0.2);
+    max-width: 80%;
     padding: 5px 10px;
     border-radius: 10px;
     word-break: break-word;
-    text-align: center;
-    width: 90%;
   }
 
   #chat input {
@@ -169,22 +160,18 @@
   const messagesDiv = document.getElementById("messages");
   const input = document.getElementById("msgInput");
 
-  // Détection OS
   const isAndroid = /Android/i.test(navigator.userAgent);
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  // Couleurs
   const colorAndroid = "#a0c4ff";
   const colorIOS = "#ff3366";
 
-  // ID unique pour l'utilisateur
   let userId = localStorage.getItem("userId");
   if (!userId) {
     userId = Math.random().toString(36).substring(2, 10);
     localStorage.setItem("userId", userId);
   }
 
-  // Affichage des messages
   onSnapshot(chatCollection, (snapshot) => {
     messagesDiv.innerHTML = "";
     snapshot.forEach((doc) => {
@@ -192,11 +179,14 @@
       const msg = document.createElement("div");
       msg.textContent = data.text;
 
-      // Choisir couleur selon l'auteur du message
       if (data.userId === userId) {
         msg.style.color = isAndroid ? colorAndroid : colorIOS;
+        msg.style.alignSelf = "flex-end"; // messages à droite
+        msg.style.background = "rgba(255,255,255,0.3)";
       } else {
         msg.style.color = data.os === "Android" ? colorAndroid : colorIOS;
+        msg.style.alignSelf = "flex-start"; // messages à gauche
+        msg.style.background = "rgba(255,255,255,0.2)";
       }
 
       messagesDiv.appendChild(msg);
@@ -204,7 +194,6 @@
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 
-  // Envoi d'un message
   input.addEventListener("keypress", async (e) => {
     if (e.key === "Enter" && input.value.trim() !== "") {
       await addDoc(chatCollection, {
@@ -216,7 +205,6 @@
     }
   });
 
-  // Compte à rebours
   const eventDate = new Date("2025-09-29T14:30:00");
   function updateTimer() {
     const now = new Date();
@@ -249,7 +237,6 @@
     document.getElementById("seconds").innerText = `${seconds}s`;
   }
 
-  // Compteur de jours ensemble
   const startDate = new Date(2025, 7, 12);
   function updateSince() {
     const now = new Date();
