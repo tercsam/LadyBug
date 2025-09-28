@@ -70,14 +70,13 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
-    justify-content: center; /* centrage vertical de tout le contenu */
-    align-items: center;     /* centrage horizontal */
+    justify-content: center;
+    align-items: center;
     font-family: 'Poppins', sans-serif;
-    color: #ff3366;
     font-weight: 700;
     text-align: center;
     padding: 10px;
-    gap: 10px; /* espace entre messages et input */
+    gap: 10px;
     overflow: hidden;
   }
 
@@ -106,7 +105,6 @@
     outline: none;
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    color: #ff3366;
     text-align: center;
     background: rgba(255,255,255,0.2);
   }
@@ -174,12 +172,19 @@
   const messagesDiv = document.getElementById("messages");
   const input = document.getElementById("msgInput");
 
+  // Détection OS
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  const messageColor = isAndroid ? "#a0c4ff" : "#ff3366";
+
   // Affichage des messages en temps réel
   onSnapshot(chatCollection, (snapshot) => {
     messagesDiv.innerHTML = "";
     snapshot.forEach((doc) => {
       const msg = document.createElement("div");
       msg.textContent = doc.data().text;
+      msg.style.color = messageColor;
       messagesDiv.appendChild(msg);
     });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -194,7 +199,7 @@
   });
 
   // Compte à rebours
-  const eventDate = new Date("2025-09-29T14:30:00");
+  const eventDate = new Date("2025-09-27T11:00:00");
   function updateTimer() {
     const now = new Date();
     const diff = eventDate - now;
