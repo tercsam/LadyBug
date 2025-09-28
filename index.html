@@ -88,6 +88,7 @@
     align-items: center;
     gap: 5px;
     width: 100%;
+    overflow-y: auto;
   }
 
   #messages div {
@@ -154,12 +155,11 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-  import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+  import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDVI5b8v8oagpWPOnmVmUlN6tRBLOjzN8Y",
     authDomain: "ladybug-7f168.firebaseapp.com",
-    databaseURL: "https://ladybug-7f168-default-rtdb.firebaseio.com",
     projectId: "ladybug-7f168",
     storageBucket: "ladybug-7f168.appspot.com",
     messagingSenderId: "558949565079",
@@ -168,28 +168,33 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  const db = getFirestore(app);
+  const chatCollection = collection(db, "messages");
 
-  const chatRef = ref(db, "messages");
   const messagesDiv = document.getElementById("messages");
   const input = document.getElementById("msgInput");
 
-  onChildAdded(chatRef, (data) => {
-    const msg = document.createElement("div");
-    msg.textContent = data.val().text;
-    messagesDiv.appendChild(msg);
+  // Affichage des messages en temps réel
+  onSnapshot(chatCollection, (snapshot) => {
+    messagesDiv.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const msg = document.createElement("div");
+      msg.textContent = doc.data().text;
+      messagesDiv.appendChild(msg);
+    });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 
-  input.addEventListener("keypress", (e) => {
+  // Envoi d'un message
+  input.addEventListener("keypress", async (e) => {
     if (e.key === "Enter" && input.value.trim() !== "") {
-      push(chatRef, { text: input.value });
+      await addDoc(chatCollection, { text: input.value });
       input.value = "";
     }
   });
 
   // Compte à rebours
-  const eventDate = new Date("2025-09-29T14:30:00");
+  const eventDate = new Date("2025-09-27T11:00:00");
   function updateTimer() {
     const now = new Date();
     const diff = eventDate - now;
