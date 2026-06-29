@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" href="icon.png">
 
 <style>
+  /* ─── BASE ─────────────────────────────────────── */
   body {
     display: flex;
     flex-direction: column;
@@ -23,11 +24,9 @@
     position: relative;
   }
 
-  h1 {
-    font-size: 2.5em;
-    margin-bottom: 30px;
-  }
+  h1 { font-size: 2.5em; margin-bottom: 30px; }
 
+  /* ─── COMPTEUR PRINCIPAL ────────────────────────── */
   #timer {
     display: flex;
     gap: 15px;
@@ -45,11 +44,9 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     transition: transform 0.3s;
   }
+  .time-block:hover { transform: scale(1.05); }
 
-  .time-block:hover {
-    transform: scale(1.05);
-  }
-
+  /* ─── BADGE "DEPUIS" (haut gauche) ─────────────── */
   #since {
     position: absolute;
     top: 15px;
@@ -58,6 +55,7 @@
     padding: 8px 15px;
   }
 
+  /* ─── CHAT (haut droit) ─────────────────────────── */
   #chat {
     position: absolute;
     top: 15px;
@@ -99,6 +97,125 @@
     background: rgba(255,255,255,0.2);
   }
 
+  /* ─── BOUTON MODIFIER DATE (sous le timer) ──────── */
+  /*
+   * Petit bouton discret, stylé comme un time-block en miniature.
+   * Il s'affiche sous le compteur sans perturber la DA centrale.
+   * Alternative envisagée : icône flottante — écarté car trop intrusif.
+   */
+  #edit-date-btn {
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    border-radius: 12px;
+    padding: 8px 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: #ff3366;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    opacity: 0.75;
+  }
+  #edit-date-btn:hover {
+    transform: scale(1.05);
+    opacity: 1;
+    box-shadow: 0 5px 15px rgba(255,51,102,0.2);
+  }
+
+  /* ─── MODALE DATE PICKER ────────────────────────── */
+  /*
+   * Overlay semi-transparent avec backdrop-filter.
+   * Piège classique : sur iOS Safari < 15, backdrop-filter est ignoré.
+   * Le fond rgba suffit en fallback, la modale reste lisible.
+   */
+  #date-overlay {
+    display: none;                   /* caché par défaut */
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 102, 153, 0.12);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+  }
+  #date-overlay.open { display: flex; }
+
+  #date-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 22px;
+    padding: 32px 28px;
+    box-shadow: 0 12px 40px rgba(255, 51, 102, 0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: center;
+    min-width: 290px;
+    animation: fadeIn 0.25s ease;
+  }
+
+  #date-card h2 {
+    margin: 0;
+    font-size: 1.25em;
+    color: #ff3366;
+  }
+
+  /*
+   * Pourquoi datetime-local plutôt qu'un custom picker ?
+   * → Natif, accessible, mobile-friendly (keyboard numérique sur iOS/Android).
+   * Piège : la valeur est toujours en heure locale de l'appareil.
+   * Si les deux utilisateurs sont dans des fuseaux différents, le compte
+   * à rebours sera légèrement décalé. Pour ce cas d'usage couple, acceptable.
+   */
+  #date-input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid rgba(255, 51, 102, 0.25);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1em;
+    color: #ff3366;
+    background: rgba(255,255,255,0.7);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  #date-input:focus { border-color: #ff3366; }
+
+  .card-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .card-btn {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    padding: 11px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .card-btn:hover { transform: scale(1.03); }
+
+  .card-btn.confirm {
+    background: linear-gradient(135deg, #ff3366, #ff6699);
+    color: white;
+    box-shadow: 0 4px 14px rgba(255,51,102,0.3);
+  }
+  .card-btn.cancel {
+    background: rgba(255,255,255,0.5);
+    color: #ff3366;
+    border: 2px solid rgba(255,51,102,0.25);
+  }
+
+  /* ─── ANIMATIONS ────────────────────────────────── */
   .pulse-emoji {
     display: inline-block;
     animation: pulse 1s infinite;
@@ -106,27 +223,33 @@
 
   @keyframes pulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.3); }
+    50%       { transform: scale(1.3); }
   }
 
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
+  /* ─── RESPONSIVE ────────────────────────────────── */
   @media (max-width: 400px) {
-    #timer { font-size: 2em; gap: 10px; }
-    .time-block { padding: 10px 15px; }
-    h1 { font-size: 2em; margin-bottom: 20px; }
-    #chat { width: 180px; height: 200px; }
+    #timer       { font-size: 2em; gap: 10px; }
+    .time-block  { padding: 10px 15px; }
+    h1           { font-size: 2em; margin-bottom: 20px; }
+    #chat        { width: 180px; height: 200px; }
+    #date-card   { min-width: 250px; padding: 22px 18px; }
   }
 </style>
 </head>
 <body>
 
+<!-- Badge "depuis N jours" (haut gauche) -->
 <div id="since" class="time-block"></div>
 
+<!-- Titre -->
 <h1>Compte à rebours pour notre date ❤️</h1>
+
+<!-- Compteur principal -->
 <div id="timer">
   <div class="time-block" id="days">0j</div>
   <div class="time-block" id="hours">0h</div>
@@ -134,38 +257,97 @@
   <div class="time-block" id="seconds">0s</div>
 </div>
 
+<!-- Bouton discret sous le compteur pour changer la date cible -->
+<button id="edit-date-btn">✏️ Modifier la date</button>
+
+<!-- ── Modale de saisie de la date ────────────────────
+     Fermable par clic sur le fond ou sur "Annuler".
+     Confirmation enregistre dans Firestore → sync en temps réel
+     sur les deux appareils via onSnapshot. -->
+<div id="date-overlay">
+  <div id="date-card">
+    <h2>📅 Choisir la date du rdv</h2>
+    <input type="datetime-local" id="date-input" />
+    <div class="card-actions">
+      <button class="card-btn cancel"  id="cancel-btn">Annuler</button>
+      <button class="card-btn confirm" id="confirm-btn">Confirmer 💕</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chat (haut droit) -->
 <div id="chat">
   <div id="messages"></div>
   <input id="msgInput" placeholder="Écris ici..." />
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+  /*
+   * IMPORTS FIRESTORE
+   * setDoc est ajouté par rapport à l'original pour sauvegarder la date cible.
+   * doc() permet de cibler un document précis (config/eventDate).
+   *
+   * Ref MDN ESModule : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
+   * Ref Firebase Web SDK v9 (modular) : https://firebase.google.com/docs/web/modular-upgrade
+   */
+  import { initializeApp }    from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    onSnapshot,
+    doc,
+    setDoc
+  } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
+  /* ──────────────────────────────────────────────────
+   * INITIALISATION FIREBASE
+   * ────────────────────────────────────────────────── */
   const firebaseConfig = {
-    apiKey: "AIzaSyDVI5b8v8oagpWPOnmVmUlN6tRBLOjzN8Y",
-    authDomain: "ladybug-7f168.firebaseapp.com",
-    projectId: "ladybug-7f168",
-    storageBucket: "ladybug-7f168.appspot.com",
+    apiKey:            "AIzaSyDVI5b8v8oagpWPOnmVmUlN6tRBLOjzN8Y",
+    authDomain:        "ladybug-7f168.firebaseapp.com",
+    projectId:         "ladybug-7f168",
+    storageBucket:     "ladybug-7f168.appspot.com",
     messagingSenderId: "558949565079",
-    appId: "1:558949565079:web:9483c4aa7ba3d386549fd2",
-    measurementId: "G-SNLE8M0K3B"
+    appId:             "1:558949565079:web:9483c4aa7ba3d386549fd2",
+    measurementId:     "G-SNLE8M0K3B"
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const chatCollection = collection(db, "messages");
+  const db  = getFirestore(app);
 
+  /* ──────────────────────────────────────────────────
+   * RÉFÉRENCES FIRESTORE
+   * chatCollection : collection des messages du chat (inchangée)
+   * configDoc      : document unique stockant la date cible du compte à rebours
+   *
+   * Pourquoi un document séparé "config/eventDate" plutôt qu'un champ
+   * dans les messages ? → Séparation des responsabilités. La date de l'événement
+   * est une donnée de configuration, pas un message. Plus facile à lire/écrire
+   * sans interférer avec le chat.
+   *
+   * Piège Firestore : si la collection "config" n'existe pas encore, setDoc()
+   * la crée automatiquement. Pas besoin de provisionner en avance.
+   * ────────────────────────────────────────────────── */
+  const chatCollection = collection(db, "messages");
+  const configDoc      = doc(db, "config", "eventDate");
+
+  /* ──────────────────────────────────────────────────
+   * CHAT — logique inchangée par rapport à l'original
+   * ────────────────────────────────────────────────── */
   const messagesDiv = document.getElementById("messages");
-  const input = document.getElementById("msgInput");
+  const msgInput    = document.getElementById("msgInput");
 
   const isAndroid = /Android/i.test(navigator.userAgent);
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
   const colorAndroid = "#a0c4ff";
-  const colorIOS = "#ff3366";
+  const colorIOS     = "#ff3366";
 
+  /*
+   * Identifiant de session persisté en localStorage.
+   * Permet de distinguer "mes messages" vs "ses messages" côté client.
+   * Piège : localStorage est partagé si les deux utilisent le même navigateur
+   * sur le même appareil — cas peu probable pour un couple sur deux téléphones.
+   */
   let userId = localStorage.getItem("userId");
   if (!userId) {
     userId = Math.random().toString(36).substring(2, 10);
@@ -174,18 +356,18 @@
 
   onSnapshot(chatCollection, (snapshot) => {
     messagesDiv.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      const msg = document.createElement("div");
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const msg  = document.createElement("div");
       msg.textContent = data.text;
 
       if (data.userId === userId) {
-        msg.style.color = isAndroid ? colorAndroid : colorIOS;
-        msg.style.alignSelf = "flex-end"; // messages à droite
+        msg.style.color     = isAndroid ? colorAndroid : colorIOS;
+        msg.style.alignSelf = "flex-end";
         msg.style.background = "rgba(255,255,255,0.3)";
       } else {
-        msg.style.color = data.os === "Android" ? colorAndroid : colorIOS;
-        msg.style.alignSelf = "flex-start"; // messages à gauche
+        msg.style.color      = data.os === "Android" ? colorAndroid : colorIOS;
+        msg.style.alignSelf  = "flex-start";
         msg.style.background = "rgba(255,255,255,0.2)";
       }
 
@@ -194,23 +376,96 @@
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 
-  input.addEventListener("keypress", async (e) => {
-    if (e.key === "Enter" && input.value.trim() !== "") {
+  msgInput.addEventListener("keypress", async (e) => {
+    if (e.key === "Enter" && msgInput.value.trim() !== "") {
       await addDoc(chatCollection, {
-        text: input.value,
+        text:   msgInput.value,
         userId: userId,
-        os: isAndroid ? "Android" : "iOS"
+        os:     isAndroid ? "Android" : "iOS"
       });
-      input.value = "";
+      msgInput.value = "";
     }
   });
 
-  const eventDate = new Date("2026-05-29T12:05:00");
+  /* ──────────────────────────────────────────────────
+   * COMPTE À REBOURS
+   *
+   * Fonctionnement général :
+   * 1. On écoute configDoc en temps réel (onSnapshot).
+   * 2. À chaque changement (date mise à jour depuis n'importe quel appareil),
+   *    on met à jour `eventDate` et on relance le timer.
+   * 3. restartTimer() recrée TOUJOURS les 4 blocs HTML avant de repartir.
+   *    → évite le bug où updateTimer() tente de mettre à jour des éléments
+   *      qui ont été remplacés par le message de fin (diff <= 0).
+   *
+   * Date par défaut : la date originale codée en dur, utilisée si Firestore
+   * ne contient pas encore de document config/eventDate.
+   * ────────────────────────────────────────────────── */
+  const DEFAULT_ISO = "2026-05-29T12:05:00";
+  let eventDate    = new Date(DEFAULT_ISO);
+  let timerInterval = null;
+
+  /*
+   * onSnapshot sur le document de config.
+   * Déclenché : au chargement initial + à chaque modification depuis
+   * n'importe quel appareil. C'est le cœur de la synchronisation.
+   *
+   * Ref Firestore onSnapshot : https://firebase.google.com/docs/firestore/query-data/listen
+   */
+  onSnapshot(configDoc, (snap) => {
+    if (snap.exists()) {
+      /*
+       * La date est stockée en ISO 8601 (ex. "2026-08-15T20:00:00.000Z").
+       * new Date() parse correctement l'ISO — pas besoin de traitement manuel.
+       */
+      eventDate = new Date(snap.data().iso);
+    }
+    // Si le document n'existe pas encore → on garde DEFAULT_ISO déjà assigné
+    restartTimer();
+  });
+
+  /**
+   * Recrée les 4 blocs du timer et (re)lance l'intervalle.
+   * Appelé à chaque changement de date (via onSnapshot).
+   *
+   * Bonne pratique : toujours clearInterval avant setInterval
+   * pour ne jamais avoir deux intervalles qui tournent en parallèle.
+   */
+  function restartTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+
+    // Recrée les blocs (au cas où updateTimer les aurait remplacés par le msg de fin)
+    document.getElementById("timer").innerHTML = `
+      <div class="time-block" id="days">0j</div>
+      <div class="time-block" id="hours">0h</div>
+      <div class="time-block" id="minutes">0m</div>
+      <div class="time-block" id="seconds">0s</div>
+    `;
+
+    updateTimer();                              // premier tick immédiat
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+
+  /**
+   * Met à jour l'affichage du compte à rebours.
+   * Si diff <= 0 : remplace le timer par un message romantique aléatoire
+   * et arrête l'intervalle.
+   *
+   * Subtilité : les emojis sont wrappés dans <span class="pulse-emoji">
+   * via une regex Unicode (flag /u + \p{Emoji_Presentation}).
+   * Piège : certains caractères comme ❤ ne matchent pas Emoji_Presentation
+   * mais matchent Extended_Pictographic. Les deux sont inclus dans la regex.
+   *
+   * Ref Emoji_Presentation : https://www.unicode.org/reports/tr51/#Emoji_Properties
+   */
   function updateTimer() {
-    const now = new Date();
-    const diff = eventDate - now;
+    const diff = eventDate - new Date();
+
     if (diff <= 0) {
-      const messages = [
+      const endings = [
         "C'est notre moment 😘",
         "Grr can't wait de te voir 🫦",
         "Encore un jour ensemble 💕",
@@ -221,33 +476,94 @@
         "Mon cœur est à toi 💓",
         "Hâte de nos câlins 🤗"
       ];
-      const rand = Math.floor(Math.random()*messages.length);
-      const messageWithPulse = messages[rand].replace(/(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu, '<span class="pulse-emoji">$&</span>');
-      document.getElementById("timer").innerHTML = `<div class='time-block'>${messageWithPulse}</div>`;
+      const txt = endings[Math.floor(Math.random() * endings.length)];
+      const withPulse = txt.replace(
+        /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu,
+        '<span class="pulse-emoji">$&</span>'
+      );
+      document.getElementById("timer").innerHTML =
+        `<div class='time-block'>${withPulse}</div>`;
       clearInterval(timerInterval);
+      timerInterval = null;
       return;
     }
-    const days = Math.floor(diff / (1000*60*60*24));
-    const hours = Math.floor((diff / (1000*60*60)) % 24);
-    const minutes = Math.floor((diff / (1000*60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-    document.getElementById("days").innerText = `${days}j`;
-    document.getElementById("hours").innerText = `${hours}h`;
-    document.getElementById("minutes").innerText = `${minutes}m`;
-    document.getElementById("seconds").innerText = `${seconds}s`;
+
+    document.getElementById("days").innerText    = `${Math.floor(diff / 86400000)}j`;
+    document.getElementById("hours").innerText   = `${Math.floor(diff / 3600000) % 24}h`;
+    document.getElementById("minutes").innerText = `${Math.floor(diff / 60000)   % 60}m`;
+    document.getElementById("seconds").innerText = `${Math.floor(diff / 1000)    % 60}s`;
   }
 
-  const startDate = new Date(2025, 7, 12);
+  /* ──────────────────────────────────────────────────
+   * MODALE DE SÉLECTION DE DATE
+   *
+   * Flux :
+   *   1. Clic "Modifier la date" → ouvre l'overlay, pré-remplit le champ
+   *      avec la date courante (eventDate) convertie en format datetime-local.
+   *   2. Clic "Confirmer" → setDoc dans Firestore → onSnapshot → restartTimer.
+   *   3. Clic "Annuler" ou fond de l'overlay → fermeture sans modification.
+   *
+   * Pourquoi setDoc plutôt qu'updateDoc ?
+   *   → setDoc avec merge:false écrase complètement le document.
+   *     Ici le document n'a qu'un seul champ `iso`, pas besoin de merge.
+   *     Plus simple et sans risque de laisser des anciens champs orphelins.
+   *
+   * Ref setDoc : https://firebase.google.com/docs/firestore/manage-data/add-data#set_a_document
+   * ────────────────────────────────────────────────── */
+  const overlay    = document.getElementById("date-overlay");
+  const dateInput  = document.getElementById("date-input");
+  const editBtn    = document.getElementById("edit-date-btn");
+  const cancelBtn  = document.getElementById("cancel-btn");
+  const confirmBtn = document.getElementById("confirm-btn");
+
+  /** Convertit un objet Date en chaîne "YYYY-MM-DDTHH:MM" pour datetime-local.
+   *  Utilise l'heure locale du navigateur (pas UTC).
+   *  Piège : toISOString() renvoie UTC → il faut compenser l'offset TZ. */
+  function toLocalInputValue(date) {
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date - offset).toISOString().slice(0, 16);
+  }
+
+  editBtn.addEventListener("click", () => {
+    dateInput.value = toLocalInputValue(eventDate);
+    overlay.classList.add("open");
+  });
+
+  cancelBtn.addEventListener("click", () => overlay.classList.remove("open"));
+
+  // Fermeture en cliquant sur le fond (pas sur la carte)
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.classList.remove("open");
+  });
+
+  confirmBtn.addEventListener("click", async () => {
+    const val = dateInput.value;
+    if (!val) return;
+
+    const newDate = new Date(val); // heure locale → objet Date
+    if (isNaN(newDate.getTime())) return; // sécurité : date invalide ignorée
+
+    /*
+     * On stocke en ISO 8601 UTC via toISOString().
+     * Garantit une représentation non ambiguë, indépendante du fuseau.
+     * Les deux appareils recalculeront `diff` par rapport à new Date() local,
+     * ce qui est correct tant qu'ils sont dans le même fuseau.
+     */
+    await setDoc(configDoc, { iso: newDate.toISOString() });
+    overlay.classList.remove("open");
+  });
+
+  /* ──────────────────────────────────────────────────
+   * BADGE "DEPUIS N JOURS" — inchangé
+   * ────────────────────────────────────────────────── */
+  const startDate = new Date(2025, 7, 12); // mois 0-indexé : 7 = août
+
   function updateSince() {
-    const now = new Date();
-    const diff = now - startDate;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const days = Math.floor((Date.now() - startDate) / 86400000);
     document.getElementById("since").innerText = `${days} jours 💕`;
   }
 
   updateSince();
-  updateTimer();
-  const timerInterval = setInterval(updateTimer, 1000);
   setInterval(updateSince, 60000);
 </script>
 
