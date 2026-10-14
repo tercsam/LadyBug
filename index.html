@@ -4,62 +4,123 @@
 <meta charset="UTF-8">
 <!-- AJOUT : sans cette balise, Safari iOS rend la page en ~980px et les @media ne se déclenchent pas.
      Doc : https://developer.mozilla.org/en-US/docs/Web/HTML/Viewport_meta_tag -->
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LadyBug</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
 
 <style>
+  /* ═══════════════════════════════════════════════════════════
+     MOBILE-FIRST, calé sur iPhone 11 : 414 × 896 pt (écran @2x),
+     encoche en haut (~48 pt), barre d'accueil en bas (~34 pt).
+     Principe : le CSS de base = le téléphone. Le bureau/tablette
+     est un ajout dans @media (min-width: 700px) en bas du bloc.
+     Alternative écartée : un breakpoint max-width (desktop-first),
+     qui oblige à "défaire" des styles et finit plus fragile.
+     ═══════════════════════════════════════════════════════════ */
+
   /* ─── BASE ─── */
+  html { -webkit-text-size-adjust: 100%; } /* empêche iOS de regonfler les polices en paysage */
+
   body {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    height: 100vh;   /* fallback navigateurs anciens */
-    height: 100dvh;  /* MODIF : évite le débordement sous la barre d'adresse mobile
-                        https://developer.mozilla.org/en-US/docs/Web/CSS/length#dynamic */
+    box-sizing: border-box;
+    height: 100vh;   /* fallback anciens navigateurs */
+    height: 100dvh;  /* hauteur visible réelle (barre Safari comprise) */
     margin: 0;
+    /* env(safe-area-inset-*) : marges d'encoche/barre d'accueil. Vaut 0 si absentes.
+       Exige viewport-fit=cover dans la balise <meta viewport>.
+       Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/env */
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
     background: linear-gradient(135deg, #ffe6f0, #fff0f5);
     font-family: 'Poppins', sans-serif;
     color: #ff3366;
     text-align: center;
-    position: relative;
+    -webkit-tap-highlight-color: transparent; /* pas de flash gris au toucher sur iOS */
   }
-  h1 { font-size: 2.5em; margin-bottom: 30px; }
 
-  /* ─── COMPTEUR ─── */
+  /* margin-top:auto sur h1 ET #chat : l'espace libre est réparti,
+     donc badge en haut / compte à rebours au milieu / chat en bas. */
+  h1 {
+    margin: auto 0 18px;
+    /* clamp(min, idéal, max) : police fluide, ~25 px sur iPhone 11.
+       Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/clamp */
+    font-size: clamp(1.25rem, 6vw, 2.5rem);
+    line-height: 1.25;
+  }
+
+  /* ─── COMPTEUR : 4 colonnes égales sur toute la largeur ─── */
+  /* minmax(0,1fr) (et pas 1fr seul) : sinon une colonne peut dépasser son 1/4
+     si le contenu est large (piège classique des grilles).
+     Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/minmax */
   #timer {
-    display: flex;
-    gap: 15px;
-    font-size: 2.5em;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+    max-width: 400px;
+    font-size: clamp(1.25rem, 6.2vw, 2.5rem);
     font-weight: bold;
-    flex-wrap: wrap;
-    justify-content: center;
     animation: fadeIn 1s ease-in-out;
   }
   .time-block {
     background: rgba(255, 255, 255, 0.3);
-    padding: 15px 25px;
-    border-radius: 15px;
+    padding: 12px 2px;
+    border-radius: 14px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     transition: transform 0.3s;
   }
-  .time-block:hover { transform: scale(1.05); }
+  /* Message de fin (un seul bloc) : toute la largeur + police plus petite. */
+  #timer .time-block:only-child {
+    grid-column: 1 / -1;
+    font-size: 0.65em;
+    padding: 16px 12px;
+    line-height: 1.4;
+  }
 
-  /* ─── BADGE "DEPUIS" ─── */
-  #since { position: absolute; top: 15px; left: 15px; font-size: 1.2em; padding: 8px 15px; }
+  /* ─── BADGE "DEPUIS" : dans le flux, centré en haut ─── */
+  #since {
+    padding: 6px 16px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
 
-  /* ─── CHAT ─── */
+  /* ─── BOUTON MODIFIER LA DATE ─── */
+  /* min-height 44 px : taille minimale d'une cible tactile (recommandation Apple HIG). */
+  #edit-date-btn {
+    margin-top: 18px;
+    min-height: 44px;
+    padding: 10px 22px;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ff3366;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    opacity: 0.75;
+  }
+
+  /* ─── CHAT : carte pleine largeur en bas (plus de position:absolute) ─── */
+  /* Avant : 220 px collé en haut à droite → recouvrait le titre et le badge sur 414 px.
+     Maintenant dans le flux : jamais de chevauchement. Hauteur plafonnée à 38 % de
+     l'écran pour rester une "petite fenêtre". */
   #chat {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 220px;
-    height: 250px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 400px;
+    flex: 0 1 auto;
+    height: 38dvh;
+    min-height: 170px;
+    margin-top: auto;
     background: rgba(255,255,255,0.3);
-    border-radius: 15px;
+    border-radius: 18px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
@@ -68,59 +129,51 @@
     overflow: hidden;
   }
 
-  /* flex:1 + min-height:0 → c'est CETTE zone qui scrolle, pas #chat.
-     Piège : sans min-height:0, un enfant flex refuse de rétrécir et déborde.
+  /* flex:1 + min-height:0 → c'est #messages qui scrolle, pas #chat.
      Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/min-height */
   #messages {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     width: 100%;
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
-
-  /* Classes plutôt que styles inline en JS : thème modifiable ici seulement. */
-  #messages .msg {
-    max-width: 80%;
-    padding: 5px 10px;
-    border-radius: 10px;
+  #messages div {
+    max-width: 82%;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.35;
     word-break: break-word;
+    text-align: left;
     background: rgba(255,255,255,0.3);
   }
-  /* align-self marche car #messages est un flex en colonne.
-     https://developer.mozilla.org/en-US/docs/Web/CSS/align-self */
-  .msg--pink { color: #ff3366; align-self: flex-end;   } /* droite */
-  .msg--blue { color: #a0c4ff; align-self: flex-start; } /* gauche */
 
+  /* NOUVEAU — Pousse la pile de messages vers le bas (style chat standard).
+     margin-top:auto sur le 1er enfant est plus sûr que justify-content:flex-end,
+     qui rend le haut de la liste inaccessible au scroll quand ça déborde.
+     Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/margin */
+  #messages > :first-child { margin-top: auto; }
+
+  /* ⚠️ font-size ≥ 16 px OBLIGATOIRE : en dessous, Safari iOS zoome la page au focus
+     de l'input et ne dézoome pas toujours. C'est le piège n°1 des formulaires sur iPhone. */
   #chat input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
     border: none;
-    padding: 8px;
+    border-radius: 12px;
+    padding: 8px 12px;
     outline: none;
     font-family: 'Poppins', sans-serif;
+    font-size: 16px;
     font-weight: 700;
     text-align: center;
     background: rgba(255,255,255,0.2);
   }
-
-  /* ─── BOUTON MODIFIER DATE ─── */
-  #edit-date-btn {
-    margin-top: 20px;
-    background: rgba(255, 255, 255, 0.3);
-    border: none;
-    border-radius: 12px;
-    padding: 8px 20px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.85em;
-    font-weight: 700;
-    color: #ff3366;
-    cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
-    opacity: 0.75;
-  }
-  #edit-date-btn:hover { transform: scale(1.05); opacity: 1; box-shadow: 0 5px 15px rgba(255,51,102,0.2); }
 
   /* ─── MODALE DATE ─── */
   /* Piège : backdrop-filter ignoré sur iOS Safari < 15 ; le fond rgba sert de fallback. */
@@ -134,32 +187,34 @@
     z-index: 200;
     justify-content: center;
     align-items: center;
+    padding: env(safe-area-inset-top, 0px) 16px env(safe-area-inset-bottom, 0px);
   }
   #date-overlay.open { display: flex; }
 
   #date-card {
-    background: rgba(255, 255, 255, 0.9);
+    box-sizing: border-box;
+    width: min(100%, 340px); /* jamais plus large que l'écran (l'ancien min-width:290px risquait de déborder) */
+    background: rgba(255, 255, 255, 0.92);
     border-radius: 22px;
-    padding: 32px 28px;
+    padding: 26px 20px;
     box-shadow: 0 12px 40px rgba(255, 51, 102, 0.18);
     display: flex;
     flex-direction: column;
     gap: 18px;
     align-items: center;
-    min-width: 290px;
     animation: fadeIn 0.25s ease;
   }
-  #date-card h2 { margin: 0; font-size: 1.25em; color: #ff3366; }
+  #date-card h2 { margin: 0; font-size: 1.15rem; color: #ff3366; }
 
-  /* datetime-local : natif, accessible. Piège : valeur en heure locale de l'appareil. */
   #date-input {
     width: 100%;
     box-sizing: border-box;
+    min-height: 44px;
     border: 2px solid rgba(255, 51, 102, 0.25);
     border-radius: 12px;
     padding: 10px 14px;
     font-family: 'Poppins', sans-serif;
-    font-size: 1em;
+    font-size: 16px; /* même règle anti-zoom iOS */
     color: #ff3366;
     background: rgba(255,255,255,0.7);
     outline: none;
@@ -171,31 +226,136 @@
   .card-actions { display: flex; gap: 10px; width: 100%; }
   .card-btn {
     flex: 1;
+    min-height: 46px;
     border: none;
     border-radius: 12px;
-    padding: 11px;
+    padding: 10px;
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 0.95em;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: transform 0.2s;
   }
-  .card-btn:hover { transform: scale(1.03); }
   .card-btn.confirm { background: linear-gradient(135deg, #ff3366, #ff6699); color: white; box-shadow: 0 4px 14px rgba(255,51,102,0.3); }
   .card-btn.cancel  { background: rgba(255,255,255,0.5); color: #ff3366; border: 2px solid rgba(255,51,102,0.25); }
+
+  /* ─── SURVOL : uniquement pour souris ─── */
+  /* Sur tactile, :hover "colle" après un tap (bloc agrandi qui reste). On le réserve
+     aux appareils avec vrai survol.
+     Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/@media/hover */
+  @media (hover: hover) {
+    .time-block:hover { transform: scale(1.05); }
+    #edit-date-btn:hover { transform: scale(1.05); opacity: 1; box-shadow: 0 5px 15px rgba(255,51,102,0.2); }
+    .card-btn:hover { transform: scale(1.03); }
+  }
 
   /* ─── ANIMATIONS ─── */
   .pulse-emoji { display: inline-block; animation: pulse 1s infinite; }
   @keyframes pulse  { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ─── RESPONSIVE ─── */
-  @media (max-width: 400px) {
-    #timer      { font-size: 2em; gap: 10px; }
-    .time-block { padding: 10px 15px; }
-    h1          { font-size: 2em; margin-bottom: 20px; }
-    #chat       { width: 180px; height: 200px; }
-    #date-card  { min-width: 250px; padding: 22px 18px; }
+  /* Respecte le réglage iOS « Réduire les animations » (accessibilité). */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     NOUVEAU — DISPOSITION MOBILE UNIQUEMENT (< 700 px)
+     Surcharge les règles de base ci-dessus, uniquement sur téléphone :
+       • compteur de jours : PETIT, tout en haut à gauche
+       • chat              : PETIT, à droite (en haut, symétrique du compteur)
+       • titre + compte à rebours + bouton « Modifier la date » : GROS, au milieu
+     Pourquoi un bloc max-width séparé : il ne peut PAS toucher la version bureau
+     (≥ 700 px), qui a son propre bloc juste après. 699.98px (et pas 700px) évite
+     qu'un écran de 700 px pile tombe dans les deux blocs à la fois.
+     Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries
+     ═══════════════════════════════════════════════════════════ */
+  @media (max-width: 699.98px) {
+    /* body devient le repère des éléments en position:absolute (compteur + chat),
+       et justify-content:center centre verticalement le groupe titre/compte à rebours/bouton. */
+    body { position: relative; justify-content: center; }
+
+    /* ─── MILIEU, EN GROS ─── */
+    /* margin:auto du h1 de base retiré : sinon il repousserait tout le groupe vers le bas
+       (le chat n'est plus dans le flux, il n'y a plus rien à "répartir"). */
+    h1 { margin: 0 0 18px; font-size: clamp(1.5rem, 7.5vw, 2.5rem); }
+
+    /* 2 colonnes × 2 lignes au lieu de 4 colonnes : chaque bloc peut être beaucoup plus grand.
+       En 4 colonnes sur 414 px, la police ne pouvait pas dépasser ~25 px sans déborder. */
+    #timer {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      font-size: clamp(2rem, 11vw, 3.5rem);
+    }
+    .time-block { padding: 14px 4px; }
+
+    #edit-date-btn {
+      margin-top: 22px;
+      min-height: 52px;
+      padding: 12px 28px;
+      font-size: 1.1rem;
+    }
+
+    /* ─── COMPTEUR DE JOURS, EN PETIT, HAUT GAUCHE ─── */
+    /* top : même calcul que le padding du body (encoche + 14 px) → jamais sous l'encoche. */
+    #since {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      left: 16px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+    }
+
+    /* ─── CHAT, EN PETIT, À DROITE (en haut, en face du compteur) ─── */
+    /* Pour le descendre dans le coin bas-droit : remplacer "top: calc(...)" par
+       "bottom: calc(env(safe-area-inset-bottom, 0px) + 16px)". */
+    #chat {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      right: 16px;
+      width: 160px;
+      height: 190px;
+      min-height: 0;
+      margin-top: 0;
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     BUREAU / TABLETTE / iPhone en paysage (≥ 700 px) :
+     on retrouve la mise en page d'origine (badge en haut à gauche,
+     chat 220×250 en haut à droite, compte à rebours centré).
+     ═══════════════════════════════════════════════════════════ */
+  @media (min-width: 700px) {
+    body { position: relative; justify-content: center; padding: 16px; }
+    h1 { margin: 0 0 30px; font-size: 2.5rem; }
+
+    #timer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      width: auto;
+      max-width: none;
+      font-size: 2.5rem;
+    }
+    .time-block { padding: 15px 25px; border-radius: 15px; }
+    #timer .time-block:only-child { font-size: 1em; padding: 15px 25px; }
+
+    #since { position: absolute; top: 15px; left: 15px; font-size: 1.2rem; padding: 8px 15px; }
+
+    #edit-date-btn { margin-top: 20px; }
+
+    #chat {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 220px;
+      height: 250px;
+      min-height: 0;
+      margin-top: 0;
+      border-radius: 15px;
+    }
+    #messages div { font-size: 1rem; padding: 5px 10px; border-radius: 10px; }
   }
 </style>
 </head>
@@ -227,18 +387,23 @@
 
 <div id="chat">
   <div id="messages"></div>
-  <!-- AJOUT : maxlength limite la taille côté client (à doubler côté règles Firestore) -->
-  <input id="msgInput" placeholder="Écris ici..." maxlength="500" />
+  <input id="msgInput" placeholder="Écris ici..." />
 </div>
 
 <script type="module">
-  /* IMPORTS FIRESTORE
-     Nouveaux : query, orderBy, limitToLast (tri/limite), serverTimestamp (heure serveur).
-     Doc : https://firebase.google.com/docs/web/modular-upgrade */
+  /*
+   * IMPORTS FIRESTORE
+   * setDoc est ajouté par rapport à l'original pour sauvegarder la date cible.
+   * doc() permet de cibler un document précis (config/eventDate).
+   * serverTimestamp (NOUVEAU) : horodatage fourni par le serveur, pour trier les messages.
+   *
+   * Ref MDN ESModule : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
+   * Ref Firebase Web SDK v9 (modular) : https://firebase.google.com/docs/web/modular-upgrade
+   * Ref Server timestamp : https://firebase.google.com/docs/firestore/manage-data/add-data#server_timestamp
+   */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
   import {
-    getFirestore, collection, addDoc, onSnapshot, doc, setDoc,
-    query, orderBy, limitToLast, serverTimestamp
+    getFirestore, collection, addDoc, onSnapshot, doc, setDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
   /* INITIALISATION FIREBASE
@@ -261,89 +426,87 @@
 
   /* ──────────────────────────────────────────────────
    * CHAT
+   * Modifié : couleur selon l'appareil, tri chronologique, alignement selon la couleur.
    * ────────────────────────────────────────────────── */
   const messagesDiv = document.getElementById("messages");
   const msgInput    = document.getElementById("msgInput");
 
-  /* Identifiant de session (conservé, plus utilisé pour l'affichage).
-     Non sécurisé : généré côté client, donc falsifiable. */
+  const isAndroid = /Android/i.test(navigator.userAgent); // gardé : le champ "os" reste écrit en base
+
+  /* Rose / bleu : mêmes couleurs qu'avant, seule la règle d'attribution change. */
+  const colorPink = "#ff3366";
+  const colorBlue = "#a0c4ff";
+
+  /* Appareil de l'expéditeur : "pink" = iPhone à encoche (11 et plus), "blue" = tout le reste.
+     Piège : un navigateur ne donne PAS le modèle exact d'un iPhone (Safari fige le user-agent).
+     On se base sur la taille d'écran : tous les iPhone à encoche ont un côté long ≥ 812 pt.
+     Conséquence : iPhone X / XS / XR / XS Max (antérieurs au 11) sont classés "pink" par erreur,
+     car leurs dimensions sont identiques à celles de modèles récents.
+     Math.max(width, height) : protège d'une éventuelle rotation.
+     Doc : https://developer.mozilla.org/en-US/docs/Web/API/Screen/width
+           https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent */
+  function detectColor() {
+    const isIPhone = /iPhone/.test(navigator.userAgent);
+    const longSide = Math.max(screen.width, screen.height);
+    return (isIPhone && longSide >= 812) ? "pink" : "blue";
+  }
+  const myColor = detectColor();
+
+  /*
+   * Identifiant de session persisté en localStorage.
+   * Permet de distinguer "mes messages" vs "ses messages" côté client.
+   * Piège : localStorage est partagé si les deux utilisent le même navigateur
+   * sur le même appareil — cas peu probable pour un couple sur deux téléphones.
+   */
   let userId = localStorage.getItem("userId");
   if (!userId) {
     userId = Math.random().toString(36).substring(2, 10);
     localStorage.setItem("userId", userId);
   }
 
-  /* CAUSE DU DÉSORDRE : sans orderBy, Firestore trie par ID de document (aléatoire).
-     Ici : tri croissant sur createdAt (heure SERVEUR), limité aux 100 derniers
-     (limitToLast exige un orderBy). Pas d'index composite requis pour un seul champ.
-     ⚠️ Les anciens messages sans createdAt sont exclus de cette requête (restent en base).
-     Doc : https://firebase.google.com/docs/firestore/query-data/order-limit-data */
-  const chatQuery = query(chatCollection, orderBy("createdAt", "asc"), limitToLast(100));
+  onSnapshot(chatCollection, (snapshot) => {
+    /* Pourquoi l'ordre était aléatoire : sans tri, Firestore renvoie les documents par ID,
+       et addDoc génère des IDs aléatoires.
+       Tri côté client plutôt que query(orderBy("createdAt")) : orderBy EXCLUT les anciens
+       messages qui n'ont pas ce champ (ils disparaîtraient). Ici ils restent, placés en premier.
+       { serverTimestamps: "estimate" } : un message tout juste envoyé a createdAt = null
+       le temps que le serveur réponde ; "estimate" évite qu'il saute au mauvais endroit.
+       Doc : https://firebase.google.com/docs/reference/js/firestore_.documentsnapshot#documentsnapshotdata */
+    const messages = snapshot.docs
+      .map((d) => d.data({ serverTimestamps: "estimate" }))
+      .sort((a, b) => (a.createdAt?.toMillis() ?? 0) - (b.createdAt?.toMillis() ?? 0));
 
-  /**
-   * Renvoie "pink" ou "blue" pour CET appareil.
-   * ⚠️ Le navigateur ne donne PAS le modèle d'iPhone (user-agent figé par Apple) :
-   * on déduit d'après la taille d'écran. Cas ambigus : XR/XS Max (classés 11+),
-   * SE 2/3 (classés ≤10), "Zoom d'affichage" ou "version bureau" activés.
-   * Forçage manuel : ouvre la page une fois avec ?couleur=pink ou ?couleur=blue
-   * (mémorisé en localStorage).
-   * Docs : https://developer.mozilla.org/en-US/docs/Web/API/Screen/width
-   *        https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
-   */
-  function detectChatColor() {
-    const forced = new URLSearchParams(location.search).get("couleur");
-    if (forced === "pink" || forced === "blue") localStorage.setItem("chatColor", forced);
+    messagesDiv.innerHTML = "";
+    messages.forEach((data) => {
+      const msg = document.createElement("div");
+      msg.textContent = data.text; // textContent (pas innerHTML) : pas de faille XSS
 
-    const saved = localStorage.getItem("chatColor");
-    if (saved === "pink" || saved === "blue") return saved;
+      /* Anciens messages sans champ "color" : on retombe sur l'ancien champ "os". */
+      const color  = data.color ?? (data.os === "Android" ? "blue" : "pink");
+      const isPink = color === "pink";
 
-    if (/iPhone/i.test(navigator.userAgent)) {
-      // max() : screen.width/height peuvent s'inverser selon l'orientation.
-      // ≥ 812 pt → X et plus récents ; ≤ 736 pt → 8 et plus anciens.
-      const longSide = Math.max(screen.width, screen.height);
-      return longSide >= 812 ? "pink" : "blue";
-    }
-    return "blue"; // Android, ordinateur, iPad (qui se présente comme un Mac)…
-  }
-  const chatColor = detectChatColor();
+      msg.style.color     = isPink ? colorPink : colorBlue;
+      msg.style.alignSelf = isPink ? "flex-end" : "flex-start"; // rose = droite, bleu = gauche
+      /* Fond conservé tel quel : un peu plus marqué pour tes propres messages. */
+      msg.style.background = data.userId === userId
+        ? "rgba(255,255,255,0.3)"
+        : "rgba(255,255,255,0.2)";
 
-  /* Rendu : reconstruit la liste à chaque snapshot (OK pour ≤100 messages).
-     Alternative : snapshot.docChanges() pour n'ajouter que le nouveau.
-     Le 2e argument d'onSnapshot est le callback d'erreur (règles refusées, réseau…).
-     Doc : https://firebase.google.com/docs/firestore/query-data/listen */
-  onSnapshot(chatQuery, (snapshot) => {
-    messagesDiv.replaceChildren(); // https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceChildren
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const msg  = document.createElement("div");
-      msg.textContent = data.text; // textContent → pas d'injection HTML (XSS)
-
-      // Whitelist : jamais de valeur Firestore brute dans className (la base est écrivable par tous).
-      msg.className = "msg " + (data.color === "pink" ? "msg--pink" : "msg--blue");
       messagesDiv.appendChild(msg);
     });
-    messagesDiv.scrollTop = messagesDiv.scrollHeight; // toujours sur le dernier message
-  }, (err) => console.error("Chat : lecture refusée ou échouée", err));
+    messagesDiv.scrollTop = messagesDiv.scrollHeight; // le plus récent reste visible en bas
+  });
 
-  /* Envoi.
-     - keydown au lieu de keypress (déprécié) :
-       https://developer.mozilla.org/en-US/docs/Web/API/Element/keypress_event
-     - e.isComposing ignore l'Entrée qui valide une suggestion de clavier mobile :
-       https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/isComposing
-     - serverTimestamp : l'heure vient du serveur (Date.now() réintroduirait du désordre
-       car les horloges des deux téléphones diffèrent) :
-       https://firebase.google.com/docs/firestore/manage-data/add-data#server_timestamp */
-  msgInput.addEventListener("keydown", async (e) => {
-    if (e.key !== "Enter" || e.isComposing) return;
-    const text = msgInput.value.trim();
-    if (!text) return;
-
-    msgInput.value = ""; // vidé AVANT l'await : évite le double envoi
-    try {
-      await addDoc(chatCollection, { text, userId, color: chatColor, createdAt: serverTimestamp() });
-    } catch (err) {
-      console.error("Envoi échoué", err);
-      msgInput.value = text; // on rend le texte à l'utilisateur
+  msgInput.addEventListener("keypress", async (e) => {
+    if (e.key === "Enter" && msgInput.value.trim() !== "") {
+      await addDoc(chatCollection, {
+        text:      msgInput.value,
+        userId:    userId,
+        os:        isAndroid ? "Android" : "iOS",
+        color:     myColor,              // NOUVEAU : couleur figée à l'envoi
+        createdAt: serverTimestamp()     // NOUVEAU : horloge du serveur, pas celle du téléphone
+      });
+      msgInput.value = "";
     }
   });
 
@@ -359,7 +522,7 @@
   onSnapshot(configDoc, (snap) => {
     if (snap.exists()) eventDate = new Date(snap.data().iso); // ISO 8601, parsé nativement
     restartTimer();
-  }, (err) => console.error("Config : lecture échouée", err));
+  });
 
   /** Toujours clearInterval avant setInterval : jamais deux intervalles en parallèle. */
   function restartTimer() {
@@ -447,15 +610,14 @@
     const newDate = new Date(val);
     if (isNaN(newDate.getTime())) return;
 
-    /* MODIF : try/catch. Avant, si les règles refusaient l'écriture, le bouton ne faisait
-       rien sans aucun retour. On garde la modale ouverte pour pouvoir réessayer. */
-    try {
-      await setDoc(configDoc, { iso: newDate.toISOString() }); // ISO UTC, non ambigu
-      overlay.classList.remove("open");
-    } catch (err) {
-      console.error("Enregistrement de la date échoué", err);
-      alert("Impossible d'enregistrer la date. Réessaie 🙏");
-    }
+    /*
+     * On stocke en ISO 8601 UTC via toISOString().
+     * Garantit une représentation non ambiguë, indépendante du fuseau.
+     * Les deux appareils recalculeront `diff` par rapport à new Date() local,
+     * ce qui est correct tant qu'ils sont dans le même fuseau.
+     */
+    await setDoc(configDoc, { iso: newDate.toISOString() });
+    overlay.classList.remove("open");
   });
 
   /* ──────────────────────────────────────────────────
