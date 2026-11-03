@@ -14,10 +14,8 @@
   /* ═══════════════════════════════════════════════════════════
      MOBILE-FIRST, calé sur iPhone 11 : 414 × 896 pt (écran @2x),
      encoche en haut (~48 pt), barre d'accueil en bas (~34 pt).
-     Principe : le CSS de base = le téléphone. Le bureau/tablette
-     est un ajout dans @media (min-width: 700px) en bas du bloc.
-     Alternative écartée : un breakpoint max-width (desktop-first),
-     qui oblige à "défaire" des styles et finit plus fragile.
+     Version "fine" : polices, paddings, rayons, ombres et cadres réduits.
+     Rien d'autre n'a bougé (couleurs, positions, logique).
      ═══════════════════════════════════════════════════════════ */
 
   /* ─── BASE ─── */
@@ -42,13 +40,11 @@
     -webkit-tap-highlight-color: transparent; /* pas de flash gris au toucher sur iOS */
   }
 
-  /* margin-top:auto sur h1 ET #chat : l'espace libre est réparti,
-     donc badge en haut / compte à rebours au milieu / chat en bas. */
   h1 {
-    margin: auto 0 18px;
-    /* clamp(min, idéal, max) : police fluide, ~25 px sur iPhone 11.
+    margin: auto 0 14px;
+    /* FIN : max 2.5rem → 1.8rem, min 1.25rem → 1rem
        Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/clamp */
-    font-size: clamp(1.25rem, 6vw, 2.5rem);
+    font-size: clamp(1rem, 4.5vw, 1.8rem);
     line-height: 1.25;
   }
 
@@ -59,73 +55,71 @@
   #timer {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
+    gap: 6px;                                /* FIN : 8 → 6 */
     width: 100%;
-    max-width: 400px;
-    font-size: clamp(1.25rem, 6.2vw, 2.5rem);
+    max-width: 340px;                        /* FIN : 400 → 340 */
+    font-size: clamp(1rem, 4.5vw, 1.8rem);   /* FIN : police réduite */
     font-weight: bold;
     animation: fadeIn 1s ease-in-out;
   }
   .time-block {
     background: rgba(255, 255, 255, 0.3);
-    padding: 12px 2px;
-    border-radius: 14px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    padding: 8px 2px;                        /* FIN : 12 → 8 */
+    border-radius: 10px;                     /* FIN : 14 → 10 */
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08); /* FIN : ombre plus légère */
     transition: transform 0.3s;
   }
   /* Message de fin (un seul bloc) : toute la largeur + police plus petite. */
   #timer .time-block:only-child {
     grid-column: 1 / -1;
     font-size: 0.65em;
-    padding: 16px 12px;
+    padding: 12px 10px;                      /* FIN : 16/12 → 12/10 */
     line-height: 1.4;
   }
 
   /* ─── BADGE "DEPUIS" : dans le flux, centré en haut ─── */
   #since {
-    padding: 6px 16px;
-    font-size: 1rem;
+    padding: 4px 12px;                       /* FIN : 6/16 → 4/12 */
+    font-size: 0.85rem;                      /* FIN : 1rem → 0.85rem */
     font-weight: 700;
   }
 
   /* ─── BOUTON MODIFIER LA DATE ─── */
-  /* min-height 44 px : taille minimale d'une cible tactile (recommandation Apple HIG). */
+  /* FIN : 44 → 40 px de haut. Apple recommande 44 pt pour une cible tactile :
+     40 reste confortable au pouce, mais ne descends pas plus bas. */
   #edit-date-btn {
-    margin-top: 18px;
-    min-height: 44px;
-    padding: 10px 22px;
+    margin-top: 14px;                        /* FIN : 18 → 14 */
+    min-height: 40px;
+    padding: 8px 18px;                       /* FIN : 10/22 → 8/18 */
     background: rgba(255, 255, 255, 0.3);
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;                     /* FIN : 12 → 10 */
     font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.8rem;                       /* FIN : 0.9 → 0.8rem */
     font-weight: 700;
     color: #ff3366;
     cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     transition: transform 0.2s, box-shadow 0.2s;
     opacity: 0.75;
   }
 
   /* ─── CHAT : carte pleine largeur en bas (plus de position:absolute) ─── */
-  /* Avant : 220 px collé en haut à droite → recouvrait le titre et le badge sur 414 px.
-     Maintenant dans le flux : jamais de chevauchement. Hauteur plafonnée à 38 % de
-     l'écran pour rester une "petite fenêtre". */
   #chat {
     box-sizing: border-box;
     width: 100%;
-    max-width: 400px;
+    max-width: 340px;                        /* FIN : 400 → 340 */
     flex: 0 1 auto;
-    height: 38dvh;
-    min-height: 170px;
+    height: 32dvh;                           /* FIN : 38 → 32 dvh */
+    min-height: 140px;                       /* FIN : 170 → 140 */
     margin-top: auto;
     background: rgba(255,255,255,0.3);
-    border-radius: 18px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border-radius: 14px;                     /* FIN : 18 → 14 */
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15); /* FIN : ombre plus légère */
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    gap: 10px;
+    padding: 8px;                            /* FIN : 10 → 8 */
+    gap: 8px;                                /* FIN : 10 → 8 */
     overflow: hidden;
   }
 
@@ -134,7 +128,7 @@
   #messages {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;                                /* FIN : 6 → 5 */
     width: 100%;
     flex: 1;
     min-height: 0;
@@ -143,33 +137,31 @@
   }
   #messages div {
     max-width: 82%;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    line-height: 1.35;
+    padding: 4px 10px;                       /* FIN : 6/12 → 4/10 */
+    border-radius: 10px;                     /* FIN : 12 → 10 */
+    font-size: 0.85rem;                      /* FIN : 0.95 → 0.85rem */
+    line-height: 1.3;
     word-break: break-word;
     text-align: left;
     background: rgba(255,255,255,0.3);
   }
 
-  /* NOUVEAU — Pousse la pile de messages vers le bas (style chat standard).
-     margin-top:auto sur le 1er enfant est plus sûr que justify-content:flex-end,
-     qui rend le haut de la liste inaccessible au scroll quand ça déborde.
+  /* Pousse la pile de messages vers le bas (style chat standard).
      Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/margin */
   #messages > :first-child { margin-top: auto; }
 
-  /* ⚠️ font-size ≥ 16 px OBLIGATOIRE : en dessous, Safari iOS zoome la page au focus
-     de l'input et ne dézoome pas toujours. C'est le piège n°1 des formulaires sur iPhone. */
+  /* ⚠️ font-size 16px CONSERVÉ volontairement : en dessous, Safari iOS zoome la page
+     au focus de l'input et ne dézoome pas toujours. Seuls hauteur, padding et rayon sont réduits. */
   #chat input {
     box-sizing: border-box;
     width: 100%;
-    min-height: 44px;
+    min-height: 38px;                        /* FIN : 44 → 38 */
     border: none;
-    border-radius: 12px;
-    padding: 8px 12px;
+    border-radius: 10px;                     /* FIN : 12 → 10 */
+    padding: 6px 10px;                       /* FIN : 8/12 → 6/10 */
     outline: none;
     font-family: 'Poppins', sans-serif;
-    font-size: 16px;
+    font-size: 16px;                         /* NE PAS BAISSER (zoom iOS) */
     font-weight: 700;
     text-align: center;
     background: rgba(255,255,255,0.2);
@@ -193,28 +185,28 @@
 
   #date-card {
     box-sizing: border-box;
-    width: min(100%, 340px); /* jamais plus large que l'écran (l'ancien min-width:290px risquait de déborder) */
+    width: min(100%, 290px);                 /* FIN : 340 → 290 */
     background: rgba(255, 255, 255, 0.92);
-    border-radius: 22px;
-    padding: 26px 20px;
-    box-shadow: 0 12px 40px rgba(255, 51, 102, 0.18);
+    border-radius: 16px;                     /* FIN : 22 → 16 */
+    padding: 18px 16px;                      /* FIN : 26/20 → 18/16 */
+    box-shadow: 0 8px 28px rgba(255, 51, 102, 0.15);
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 14px;                               /* FIN : 18 → 14 */
     align-items: center;
     animation: fadeIn 0.25s ease;
   }
-  #date-card h2 { margin: 0; font-size: 1.15rem; color: #ff3366; }
+  #date-card h2 { margin: 0; font-size: 1rem; color: #ff3366; } /* FIN : 1.15 → 1rem */
 
   #date-input {
     width: 100%;
     box-sizing: border-box;
-    min-height: 44px;
-    border: 2px solid rgba(255, 51, 102, 0.25);
-    border-radius: 12px;
-    padding: 10px 14px;
+    min-height: 40px;                        /* FIN : 44 → 40 */
+    border: 1.5px solid rgba(255, 51, 102, 0.25); /* FIN : 2 → 1.5px */
+    border-radius: 10px;
+    padding: 8px 12px;
     font-family: 'Poppins', sans-serif;
-    font-size: 16px; /* même règle anti-zoom iOS */
+    font-size: 16px;                         /* NE PAS BAISSER (zoom iOS) */
     color: #ff3366;
     background: rgba(255,255,255,0.7);
     outline: none;
@@ -223,25 +215,24 @@
   }
   #date-input:focus { border-color: #ff3366; }
 
-  .card-actions { display: flex; gap: 10px; width: 100%; }
+  .card-actions { display: flex; gap: 8px; width: 100%; }
   .card-btn {
     flex: 1;
-    min-height: 46px;
+    min-height: 40px;                        /* FIN : 46 → 40 */
     border: none;
-    border-radius: 12px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 8px;
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.85rem;                      /* FIN : 0.95 → 0.85rem */
     cursor: pointer;
     transition: transform 0.2s;
   }
-  .card-btn.confirm { background: linear-gradient(135deg, #ff3366, #ff6699); color: white; box-shadow: 0 4px 14px rgba(255,51,102,0.3); }
-  .card-btn.cancel  { background: rgba(255,255,255,0.5); color: #ff3366; border: 2px solid rgba(255,51,102,0.25); }
+  .card-btn.confirm { background: linear-gradient(135deg, #ff3366, #ff6699); color: white; box-shadow: 0 3px 10px rgba(255,51,102,0.25); }
+  .card-btn.cancel  { background: rgba(255,255,255,0.5); color: #ff3366; border: 1.5px solid rgba(255,51,102,0.25); }
 
   /* ─── SURVOL : uniquement pour souris ─── */
-  /* Sur tactile, :hover "colle" après un tap (bloc agrandi qui reste). On le réserve
-     aux appareils avec vrai survol.
+  /* Sur tactile, :hover "colle" après un tap. On le réserve aux appareils avec vrai survol.
      Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/@media/hover */
   @media (hover: hover) {
     .time-block:hover { transform: scale(1.05); }
@@ -260,50 +251,40 @@
   }
 
   /* ═══════════════════════════════════════════════════════════
-     NOUVEAU — DISPOSITION MOBILE UNIQUEMENT (< 700 px)
-     Surcharge les règles de base ci-dessus, uniquement sur téléphone :
+     DISPOSITION MOBILE UNIQUEMENT (< 700 px)
        • compteur de jours : PETIT, tout en haut à gauche
        • chat              : PETIT, à droite (en haut, symétrique du compteur)
-       • titre + compte à rebours + bouton « Modifier la date » : GROS, au milieu
-     Pourquoi un bloc max-width séparé : il ne peut PAS toucher la version bureau
-     (≥ 700 px), qui a son propre bloc juste après. 699.98px (et pas 700px) évite
-     qu'un écran de 700 px pile tombe dans les deux blocs à la fois.
+       • titre + compte à rebours + bouton « Modifier la date » : au milieu
+     699.98px (et pas 700px) évite qu'un écran de 700 px pile tombe dans les deux blocs.
      Doc : https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries
      ═══════════════════════════════════════════════════════════ */
   @media (max-width: 699.98px) {
-    /* body devient le repère des éléments en position:absolute (compteur + chat),
-       et justify-content:center centre verticalement le groupe titre/compte à rebours/bouton. */
     body { position: relative; justify-content: center; }
 
-    /* ─── MILIEU, EN GROS ─── */
-    /* margin:auto du h1 de base retiré : sinon il repousserait tout le groupe vers le bas
-       (le chat n'est plus dans le flux, il n'y a plus rien à "répartir"). */
-    h1 { margin: 0 0 18px; font-size: clamp(1.5rem, 7.5vw, 2.5rem); }
+    /* ─── MILIEU ─── */
+    h1 { margin: 0 0 14px; font-size: clamp(1.2rem, 6vw, 2rem); }   /* FIN : 1.5/7.5vw/2.5 → 1.2/6vw/2 */
 
-    /* 2 colonnes × 2 lignes au lieu de 4 colonnes : chaque bloc peut être beaucoup plus grand.
-       En 4 colonnes sur 414 px, la police ne pouvait pas dépasser ~25 px sans déborder. */
     #timer {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      font-size: clamp(2rem, 11vw, 3.5rem);
+      gap: 8px;                                                      /* FIN : 10 → 8 */
+      font-size: clamp(1.5rem, 8vw, 2.5rem);                         /* FIN : 2/11vw/3.5 → 1.5/8vw/2.5 */
     }
-    .time-block { padding: 14px 4px; }
+    .time-block { padding: 10px 4px; }                               /* FIN : 14 → 10 */
 
     #edit-date-btn {
-      margin-top: 22px;
-      min-height: 52px;
-      padding: 12px 28px;
-      font-size: 1.1rem;
+      margin-top: 16px;                                              /* FIN : 22 → 16 */
+      min-height: 42px;                                              /* FIN : 52 → 42 */
+      padding: 10px 22px;                                            /* FIN : 12/28 → 10/22 */
+      font-size: 0.9rem;                                             /* FIN : 1.1 → 0.9rem */
     }
 
     /* ─── COMPTEUR DE JOURS, EN PETIT, HAUT GAUCHE ─── */
-    /* top : même calcul que le padding du body (encoche + 14 px) → jamais sous l'encoche. */
     #since {
       position: absolute;
       top: calc(env(safe-area-inset-top, 0px) + 14px);
       left: 16px;
-      padding: 4px 10px;
-      font-size: 0.8rem;
+      padding: 3px 8px;                                              /* FIN : 4/10 → 3/8 */
+      font-size: 0.7rem;                                             /* FIN : 0.8 → 0.7rem */
     }
 
     /* ─── CHAT, EN PETIT, À DROITE (en haut, en face du compteur) ─── */
@@ -313,8 +294,8 @@
       position: absolute;
       top: calc(env(safe-area-inset-top, 0px) + 14px);
       right: 16px;
-      width: 160px;
-      height: 190px;
+      width: 140px;                                                  /* FIN : 160 → 140 */
+      height: 160px;                                                 /* FIN : 190 → 160 */
       min-height: 0;
       margin-top: 0;
     }
@@ -322,40 +303,39 @@
 
   /* ═══════════════════════════════════════════════════════════
      BUREAU / TABLETTE / iPhone en paysage (≥ 700 px) :
-     on retrouve la mise en page d'origine (badge en haut à gauche,
-     chat 220×250 en haut à droite, compte à rebours centré).
+     badge en haut à gauche, chat en haut à droite, compte à rebours centré.
      ═══════════════════════════════════════════════════════════ */
   @media (min-width: 700px) {
     body { position: relative; justify-content: center; padding: 16px; }
-    h1 { margin: 0 0 30px; font-size: 2.5rem; }
+    h1 { margin: 0 0 24px; font-size: 1.8rem; }                      /* FIN : 2.5 → 1.8rem */
 
     #timer {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
+      gap: 12px;                                                     /* FIN : 15 → 12 */
       width: auto;
       max-width: none;
-      font-size: 2.5rem;
+      font-size: 1.8rem;                                             /* FIN : 2.5 → 1.8rem */
     }
-    .time-block { padding: 15px 25px; border-radius: 15px; }
-    #timer .time-block:only-child { font-size: 1em; padding: 15px 25px; }
+    .time-block { padding: 10px 20px; border-radius: 12px; }         /* FIN : 15/25, 15 → 10/20, 12 */
+    #timer .time-block:only-child { font-size: 1em; padding: 10px 20px; }
 
-    #since { position: absolute; top: 15px; left: 15px; font-size: 1.2rem; padding: 8px 15px; }
+    #since { position: absolute; top: 15px; left: 15px; font-size: 1rem; padding: 6px 12px; } /* FIN : 1.2rem, 8/15 → 1rem, 6/12 */
 
-    #edit-date-btn { margin-top: 20px; }
+    #edit-date-btn { margin-top: 16px; }                             /* FIN : 20 → 16 */
 
     #chat {
       position: absolute;
       top: 15px;
       right: 15px;
-      width: 220px;
-      height: 250px;
+      width: 190px;                                                  /* FIN : 220 → 190 */
+      height: 210px;                                                 /* FIN : 250 → 210 */
       min-height: 0;
       margin-top: 0;
-      border-radius: 15px;
+      border-radius: 12px;                                           /* FIN : 15 → 12 */
     }
-    #messages div { font-size: 1rem; padding: 5px 10px; border-radius: 10px; }
+    #messages div { font-size: 0.9rem; padding: 4px 8px; border-radius: 8px; } /* FIN : 1rem, 5/10, 10 → 0.9rem, 4/8, 8 */
   }
 </style>
 </head>
