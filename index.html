@@ -55,10 +55,10 @@
   #timer {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;                                /* FIN : 8 → 6 */
+    gap: 5px;                                /* FIN : 8 → 6 → 5 */
     width: 100%;
-    max-width: 340px;                        /* FIN : 400 → 340 */
-    font-size: clamp(1rem, 4.5vw, 1.8rem);   /* FIN : police réduite */
+    max-width: 290px;                        /* FIN : 400 → 340 → 290 */
+    font-size: clamp(0.8rem, 3.6vw, 1.25rem); /* FIN : police encore réduite */
     font-weight: bold;
     animation: fadeIn 1s ease-in-out;
   }
@@ -266,10 +266,10 @@
 
     #timer {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;                                                      /* FIN : 10 → 8 */
-      font-size: clamp(1.5rem, 8vw, 2.5rem);                         /* FIN : 2/11vw/3.5 → 1.5/8vw/2.5 */
+      gap: 6px;                                                      /* FIN : 10 → 8 → 6 */
+      font-size: clamp(1.05rem, 5.5vw, 1.6rem);                      /* FIN : 2/11vw/3.5 → 1.5/8vw/2.5 → 1.05/5.5vw/1.6 */
     }
-    .time-block { padding: 10px 4px; }                               /* FIN : 14 → 10 */
+    .time-block { padding: 7px 4px; }                                /* FIN : 14 → 10 → 7 */
 
     #edit-date-btn {
       margin-top: 16px;                                              /* FIN : 22 → 16 */
@@ -313,13 +313,13 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 12px;                                                     /* FIN : 15 → 12 */
+      gap: 10px;                                                     /* FIN : 15 → 12 → 10 */
       width: auto;
       max-width: none;
-      font-size: 1.8rem;                                             /* FIN : 2.5 → 1.8rem */
+      font-size: 1.3rem;                                             /* FIN : 2.5 → 1.8 → 1.3rem */
     }
-    .time-block { padding: 10px 20px; border-radius: 12px; }         /* FIN : 15/25, 15 → 10/20, 12 */
-    #timer .time-block:only-child { font-size: 1em; padding: 10px 20px; }
+    .time-block { padding: 8px 16px; border-radius: 10px; }          /* FIN : 15/25, 15 → 10/20, 12 → 8/16, 10 */
+    #timer .time-block:only-child { font-size: 1em; padding: 8px 16px; }
 
     #since { position: absolute; top: 15px; left: 15px; font-size: 1rem; padding: 6px 12px; } /* FIN : 1.2rem, 8/15 → 1rem, 6/12 */
 
